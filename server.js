@@ -1,12 +1,23 @@
-const express = require('express');
+const express = require("express");
+const cors = require("cors");
 const app = express();
+
+// Use CORS middleware
+app.use(cors());
+
+/* const corsOptions = {
+  origin: "https://www.nileshblog.tech/", //(https://your-client-app.com)
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions)); */
 
 //Middleware para que express pueda entender json
 app.use(express.json());
 
 //Ruta por defecto que manda un response al visitar el home
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
 //Rutas de usuarios
@@ -31,5 +42,5 @@ app.use("/auth", authRoutes);
 // Set up the server to listen on port 3000
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+  console.log(`Server listening on port ${port}`);
 });
