@@ -5,6 +5,7 @@ const citasController = require("../controllers/citaController");
 // Rutas para usuarios
 router.post("/crear", citasController.crearCita);
 router.get("/mis-citas", citasController.obtenerCitas);
+router.put("/cancelar", citasController.cancelarCita);
 
 // Rutas para entrenadores
 router.put("/actualizar-estado", citasController.actualizarEstadoCita);

@@ -86,6 +86,43 @@ exports.actualizarEstadoCita = async (req, res) => {
   }
 };
 
+exports.cancelarCita = async (req, res) => {
+  const { id_usuario, id_cita } = req.body;
+
+  if (!id_usuario || !id_cita) {
+    return res.status(400).json({
+      exito: false,
+      mensaje: "Datos incompletos",
+      detalles: "El id de la cita es obligatorio",
+    });
+  }
+
+  try {
+    const cita = await Cita.cancelarCitaCliente(id_cita, id_usuario);
+
+    if (!cita) {
+      return res.status(404).json({
+        exito: false,
+        mensaje: "Cita no encontrada",
+        detalles: "La cita no existe o no pertenece a este usuario",
+      });
+    }
+
+    res.json({
+      exito: true,
+      mensaje: "Cita cancelada exitosamente",
+      datos: cita,
+    });
+  } catch (error) {
+    console.error("Error al cancelar cita:", error);
+    res.status(500).json({
+      exito: false,
+      mensaje: "Error al cancelar la cita",
+      detalles: "Ocurrió un error interno del servidor",
+    });
+  }
+};
+
 // Obtener citas (según el rol)
 exports.obtenerCitas = async (req, res) => {
   const { rol, id_usuario, id_entrenador } = req.body;

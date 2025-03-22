@@ -94,3 +94,33 @@ exports.crearEntrenador = async (req, res) => {
     });
   }
 };
+
+//Obtener entrenador por gym
+exports.obtenerPorGym = async(req,res) =>{
+  const {id_gimnasio} = req.body;
+
+  if(!id_gimnasio){
+    return res.status(400).json({
+      exito:false,
+      mensaje:"Datos incompletos",
+      detalles: "El id del gimnasio es obligatorio"
+    })
+  }
+
+  try{
+    const entrenadores = await Entrenador.obtenerPorGym(id_gimnasio);
+    res.json({
+      exito:true,
+      mensaje:"Entrenadores encontrados",
+      datos:entrenadores
+    })
+  }catch(error){
+    console.error("Error al obtener los entrenadores por gimnasio:", error);
+    res.status(500).json({
+      exito:false,
+      mensaje:"Error al obtener los entrenadores",
+      detalles:"Ocurrió un error interno del servidor"
+    })
+
+  }
+}
