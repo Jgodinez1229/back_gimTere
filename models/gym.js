@@ -92,3 +92,18 @@ exports.eliminarGym = async (id_gimnasio) => {
     client.release();
   }
 };
+
+exports.obtenerGymPorId = async (id_gimnasio) => {
+  const consulta = `
+    SELECT 
+      g.*,
+      COUNT(e.id_entrenador) as total_entrenadores
+    FROM gimnasios g
+    LEFT JOIN entrenadores e ON g.id_gimnasio = e.id_gimnasio
+    WHERE g.id_gimnasio = $1
+    GROUP BY g.id_gimnasio
+  `;
+
+  const resultado = await pool.query(consulta, [id_gimnasio]);
+  return resultado.rows[0];
+};

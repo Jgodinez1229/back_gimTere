@@ -123,7 +123,7 @@ exports.eliminarGym = async (req, res) => {
     return res.status(400).json({
       exito: false,
       mensaje: "ID requerido",
-      detalles: "El ID del gimnasio es obligatorio"
+      detalles: "El ID del gimnasio es obligatorio",
     });
   }
 
@@ -134,7 +134,7 @@ exports.eliminarGym = async (req, res) => {
       return res.status(404).json({
         exito: false,
         mensaje: "Gimnasio no encontrado",
-        detalles: "El gimnasio que intenta eliminar no existe"
+        detalles: "El gimnasio que intenta eliminar no existe",
       });
     }
 
@@ -142,15 +142,51 @@ exports.eliminarGym = async (req, res) => {
       exito: true,
       mensaje: "Gimnasio eliminado correctamente",
       detalles: "Los entrenadores han sido desvinculados del gimnasio",
-      datos: gimnasioEliminado
+      datos: gimnasioEliminado,
     });
-
   } catch (error) {
     console.error("Error al eliminar el gimnasio:", error);
     res.status(500).json({
       exito: false,
       mensaje: "Error al eliminar el gimnasio",
-      detalles: "Ocurrió un error interno del servidor"
+      detalles: "Ocurrió un error interno del servidor",
+    });
+  }
+};
+
+exports.obtenerGymPorId = async (req, res) => {
+  const { id_gimnasio } = req.params;
+
+  if (!id_gimnasio) {
+    return res.status(400).json({
+      exito: false,
+      mensaje: "ID requerido",
+      detalles: "El ID del gimnasio es obligatorio",
+    });
+  }
+
+  try {
+    const gimnasio = await Gimnasio.obtenerGymPorId(id_gimnasio);
+
+    if (!gimnasio) {
+      return res.status(404).json({
+        exito: false,
+        mensaje: "Gimnasio no encontrado",
+        detalles: "No se encontró el gimnasio especificado",
+      });
+    }
+
+    res.json({
+      exito: true,
+      mensaje: "Gimnasio obtenido correctamente",
+      datos: gimnasio,
+    });
+  } catch (error) {
+    console.error("Error al obtener el gimnasio:", error);
+    res.status(500).json({
+      exito: false,
+      mensaje: "Error al obtener el gimnasio",
+      detalles: "Ocurrió un error interno del servidor",
     });
   }
 };
