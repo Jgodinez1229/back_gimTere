@@ -67,6 +67,39 @@ exports.obtenerPorGym = async (id_gimnasio) => {
     ORDER BY e.nombre ASC
   `;
 
-  const resultado = await pool.query(consulta,[id_gimnasio]);
+  const resultado = await pool.query(consulta, [id_gimnasio]);
   return resultado.rows;
+};
+
+exports.obtenerPorId = async (id_entrenador) => {
+  const consulta = `
+    SELECT 
+      e.id_entrenador,
+      e.nombre,
+      e.foto,
+      e.edad,
+      e.costo_sesion,
+      e.costo_mensual,
+      e.telefono,
+      e.correo,
+      e.id_gimnasio,
+      g.nombre as nombre_gimnasio
+    FROM entrenadores e
+    LEFT JOIN gimnasios g ON e.id_gimnasio = g.id_gimnasio
+    WHERE e.id_entrenador = $1
+  `;
+  const resultado = await pool.query(consulta, [id_entrenador]);
+  return resultado.rows[0];
+};
+
+exports.darseDeBajaDelGym = async (id_entrenador) => {
+  const consulta = `
+    UPDATE entrenadores
+    SET id_gimnasio = NULL,
+        fecha_actualizacion = CURRENT_TIMESTAMP
+    WHERE id_entrenador = $1
+    RETURNING *
+  `;
+  const resultado = await pool.query(consulta, [id_entrenador]);
+  return resultado.rows[0];
 };
