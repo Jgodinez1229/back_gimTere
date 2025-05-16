@@ -39,6 +39,10 @@ app.use("/citas", citasRoutes);
 const authRoutes = require("./routes/autenticacionRoutes");
 app.use("/auth", authRoutes);
 
+//Rutas de solicitudes de entrenador
+const solicitudesRoutes = require("./routes/solicitudesRoutes");
+app.use("/solicitudes", solicitudesRoutes);
+
 // Set up the server to listen on port 3000
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
