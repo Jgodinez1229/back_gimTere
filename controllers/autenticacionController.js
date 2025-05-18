@@ -41,6 +41,8 @@ exports.iniciarSesion = async (req, res) => {
     }
 
     // Generar token 2FA
+    // Generar token alfanumérico de 8 caracteres
+    //const token2FA = crypto.randomBytes(4).toString("hex").toUpperCase();
     const token2FA = crypto.randomInt(100000, 999999).toString();
     const expiracion = new Date(Date.now() + 10 * 60000);
 
@@ -143,5 +145,85 @@ exports.verificarToken = async (req, res) => {
       mensaje: "Error en la verificación",
       detalles: "Ocurrió un error interno del servidor",
     });
+  }
+};
+
+// Solicitar recuperación
+exports.solicitarRecuperacion = async (req, res) => {
+  const { correo } = req.body;
+  if (!correo) {
+    return res.status(400).json({ exito: false, mensaje: "Correo requerido" });
+  }
+  try {
+    // Buscar en usuarios
+    let usuario = await Auth.buscarUsuarioPorCorreo(correo);
+    let tipo = "cliente";
+    if (!usuario) {
+      // Si no está en usuarios, buscar en entrenadores
+      usuario = await Auth.buscarEntrenadorPorCorreo(correo);
+      tipo = "entrenador";
+    }
+    if (!usuario) {
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Correo no registrado" });
+    }
+
+    // Generar token alfanumérico de 8 caracteres
+    const token = crypto.randomBytes(4).toString("hex").toUpperCase();
+    const expiracion = new Date(Date.now() + 15 * 60000); // 15 minutos
+
+    await Auth.guardarTokenRecuperacion(correo, token, expiracion, tipo);
+
+    // Enviar correo
+    await transporter.sendMail({
+      from: '"Recuperación" <noreply@tugimnasio.com>',
+      to: correo,
+      subject: "Recuperación de contraseña",
+      text: `Usa este token para recuperar tu contraseña: ${token}`,
+      html: `<p>Usa este token para recuperar tu contraseña: <b>${token}</b></p>
+      <p>Este código expirará en 10 minutos.</p>`,
+    });
+
+    res.json({ exito: true, mensaje: "Correo de recuperación enviado" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ exito: false, mensaje: "Error al solicitar recuperación" });
+  }
+};
+// Cambiar contraseña usando token
+exports.cambiarContrasenaConToken = async (req, res) => {
+  const { token, nuevaContrasena } = req.body;
+  if (!token || !nuevaContrasena) {
+    return res.status(400).json({ exito: false, mensaje: "Datos incompletos" });
+  }
+  try {
+    // Buscar en usuarios
+    let usuario = await Auth.buscarPorTokenRecuperacion(token, "cliente");
+    let tipo = "cliente";
+    if (!usuario) {
+      // Si no está en usuarios, buscar en entrenadores
+      usuario = await Auth.buscarPorTokenRecuperacion(token, "entrenador");
+      tipo = "entrenador";
+    }
+    if (!usuario) {
+      return res
+        .status(400)
+        .json({ exito: false, mensaje: "Token inválido o expirado" });
+    }
+    const hash = await bcrypt.hash(nuevaContrasena, 10);
+    await Auth.cambiarContrasenaPorRecuperacion(
+      usuario[tipo === "entrenador" ? "id_entrenador" : "id_usuario"],
+      hash,
+      tipo
+    );
+    res.json({ exito: true, mensaje: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ exito: false, mensaje: "Error al cambiar contraseña" });
   }
 };
