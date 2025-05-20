@@ -115,9 +115,9 @@ exports.obtenerGyms = async (req, res) => {
   }
 };
 
-//Eliminar gym
+// Eliminar gym
 exports.eliminarGym = async (req, res) => {
-  const { id_gimnasio } = req.body;
+  const { id_gimnasio } = req.params;
 
   if (!id_gimnasio) {
     return res.status(400).json({
@@ -153,6 +153,7 @@ exports.eliminarGym = async (req, res) => {
     });
   }
 };
+
 
 exports.obtenerGymPorId = async (req, res) => {
   const { id_gimnasio } = req.params;
