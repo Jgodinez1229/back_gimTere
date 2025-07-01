@@ -1,0 +1,43 @@
+name: PostgreSQL Weekly Backup to Drive
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Cada domingo a las 3 AM UTC
+  workflow_dispatch:      # Ejecución manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      # Paso 1: Instalar herramientas
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client p7zip-full
+
+      # Paso 2: Crear dump comprimido con fecha
+      - name: Dump and compress database
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          export PGPASSWORD=$DB_PASSWORD
+          pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME -Fc | 7z a -si -t7z -mx9 "backup_$(date +%Y-%m-%d).7z"
+
+      # Paso 3: Subir a Google Drive
+      - name: Upload to Google Drive
+        uses: satackey/google-drive-upload-action@v1
+        with:
+          gdrive_credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+          gdrive_parent_folder_id: "1APPO-UgxflfvemZEX1hn4Pz2oST41gkN"
+          upload_filepath: "backup_$(date +%Y-%m-%d).7z"
+          overwrite: true
+
+      # Paso 4 (Opcional): Limpieza de backups antiguos (conserva solo 4 más recientes)
+      - name: Clean old backups
+        if: success()
+        uses: jitterbit/delete-old-releases@v1
+        with:
+          keep_latest: 4
+          pattern: 'backup_*.7z'
