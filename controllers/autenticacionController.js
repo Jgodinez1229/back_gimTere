@@ -36,7 +36,7 @@ exports.iniciarSesion = async (req, res) => {
       return res.status(401).json({
         exito: false,
         mensaje: "Contraseña incorrecta",
-        detalles: "La contraseña ingresada no es correcta",
+        detalles: "La contraseña ingresada no es correctaaa",
       });
     }
 

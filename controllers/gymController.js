@@ -96,6 +96,7 @@ exports.actualizarGym = async (req, res) => {
   }
 };
 
+
 exports.obtenerGyms = async (req, res) => {
   try {
     const gimnasios = await Gimnasio.obtenerGyms();
